@@ -2,7 +2,7 @@ import { v4 } from "uuid";
 
 export type Store = {
   content: string;
-  version: string;
+  version: number;
 };
 
 export function getStoreIdFromUrl(url: string) {
@@ -20,6 +20,6 @@ export function generateNewStoreId() {
 export function generateNewStore(): Store {
   return {
     content: "",
-    version: "0",
+    version: 0,
   };
 }
