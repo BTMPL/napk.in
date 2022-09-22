@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { PersistorState } from '../../services/persist';
 import { AppStateContext } from '../appState';
+import { DownloadIcon } from './DownloadIcon';
 import { EditIcon } from './EditIcon';
 import { PasswordIcon } from './PasswordIcon';
 import { SyncIcon } from './SyncIcon';
@@ -30,6 +31,7 @@ export const Toolbar = () => {
         <div className={style.toolbar}>
             <div />
             <div>
+                <span className={style.icon} onClick={store.download}><DownloadIcon /></span>
                 <span onClick={() => {
                     const salt = window.prompt('What\'s your new salt?');
                     if (salt) {

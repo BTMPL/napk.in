@@ -37,7 +37,7 @@ export async function encryptPayload(data: Store, password: string) {
     format: "binary",
   });
 
-  return result.toString();
+  return result;
 }
 
 export function generateSalt() {

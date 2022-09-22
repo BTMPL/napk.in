@@ -65,7 +65,7 @@ export class Persist {
     storeId: string,
     salt: string
   ) => {
-    const payload = await encryptPayload(storeToPersist, salt);
+    const payload = (await encryptPayload(storeToPersist, salt)).toString();
     this.persist(payload, storeId);
   };  
 

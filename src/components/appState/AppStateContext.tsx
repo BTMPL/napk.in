@@ -1,5 +1,6 @@
 import React from 'react';
-import { generateSalt } from '../../services/crypto';
+import { encryptPayload, generateSalt } from '../../services/crypto';
+import { downloadBlob } from '../../services/download';
 import { Persist } from '../../services/persist';
 import { generateNewStore, generateNewStoreId, getStoreIdFromUrl, Store } from '../../services/store';
 
@@ -16,6 +17,7 @@ type ContextType = {
         store: Store | null,
         update: (field: keyof Store, value: string) => void,
         setSalt: (salt: string) => void,
+        download: () => void,
     }
 }
 
@@ -32,6 +34,7 @@ export const AppStateContext = React.createContext<ContextType>({
         store: null,
         update: (field: keyof Store, value: string) => {},
         setSalt: (salt: string) => {},
+        download: () => {},
     }
 })
 
@@ -145,6 +148,11 @@ export const AppStateProvider = ({ children }: AppStatecontextProviderProps) => 
                 store,
                 update: updateStore,
                 setSalt: changeSalt,
+                download: () => {
+                    (async() => {
+                        downloadBlob(JSON.stringify(store), 'napk.in.txt')
+                    })()
+                }
             }
         }}>
             {children}
