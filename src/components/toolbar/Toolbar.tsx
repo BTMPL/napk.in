@@ -43,7 +43,9 @@ export const Toolbar = () => {
 
     return (
         <div className={style.toolbar}>
-            <div />
+            <div>
+                <span onClick={toggleEditor} className={style.icon}><EditIcon /></span>
+            </div>
             <div>
                 <span className={style.icon}>
                     <span className={style.moon} onClick={() => setTheme('dark')}><MoonIcon /></span>
@@ -56,7 +58,6 @@ export const Toolbar = () => {
                         store.setSalt(salt)
                     }
                 }} className={style.icon}><PasswordIcon /></span>
-                <span onClick={toggleEditor} className={style.icon}><EditIcon /></span>
                 <span className={style.icon} title={persistance.persistor?.lastSync?.toTimeString()} onClick={persistance.store}><SyncIcon isActive={isSyncing}/></span>
             </div>
         </div>
