@@ -1,11 +1,10 @@
 import React from "react";
 import "./App.css";
+import { Editor } from "./components/editor";
+import { Toolbar } from "./components/toolbar";
 import {
-  decryptPayload,
-  encryptPayload,
   generateSalt,
 } from "./services/crypto";
-import { persist, retreive } from "./services/persist";
 import {
   generateNewStore,
   generateNewStoreId,
@@ -13,63 +12,80 @@ import {
   Store,
 } from "./services/store";
 
-async function test() {
-  const message = await encryptPayload(
-    {
-      content: "this is a test",
-      version: "1",
-    },
-    "letmein"
-  );
-
-  const decrypted = await decryptPayload(message, "letmein");
-}
-
-test();
-
-const storeData = async (
-  storeToPersist: Store,
-  storeId: string,
-  salt: string
-) => {
-  const payload = await encryptPayload(storeToPersist, salt);
-  persist(payload, storeId);
-};
-
-const retreiveData = async (storeId: string, salt: string) => {
-  const store = await retreive(storeId);
-  if (store) {
-    try {
-      const decrypted = decryptPayload(store, salt);
-      return decrypted;
-    } catch {
-      throw new Error();
-    }
-  }
-  throw new Error();
-};
+import styles from "./app.module.css";
+import { Persist } from "./services/persist";
 
 function App() {
-  const [salt, setSalt] = React.useState("");
+
+  const [persistor] = React.useState(() => {
+    const p = new Persist()
+    p.onPersistorStateChange(v => console.log(v))
+    return p;
+  });
+
+  const [salt, setSalt] = React.useState(window.location.hash.toString().substr(1));
   const [storeId, setStoreId] = React.useState(() =>
     getStoreIdFromUrl(window.location.pathname)
   );
 
   const [store, setStore] = React.useState(generateNewStore());
 
-  console.log(store);
+  const updateStore = (field: keyof Store, value: string) => {
+    setStore({
+      ...store,
+      [field]: value
+    })
+  }
 
   React.useEffect(() => {
     if (!storeId) {
       setStoreId(generateNewStoreId());
       setSalt(generateSalt());
       setStore(generateNewStore());
-    } else {
-      window.history.pushState(undefined, "", `/d/${storeId}#${salt}`);
+    } 
+    if (storeId && salt) {
+      window.history.pushState(undefined, "", `/n/${storeId}`);
+      window.location.hash = salt;
     }
-  }, [storeId, salt]);
+  }, [storeId, salt, store]);
 
-  return <>null</>;
+  React.useEffect(() => {
+    if (salt) {
+      window.location.hash = salt;
+    }
+  }, [salt])
+
+  React.useEffect(() => {
+    if (store && storeId && salt) {
+      return persistor.sync(store, storeId, salt);
+    }
+  }, [store, storeId, salt, persistor])
+
+  React.useEffect(() => {
+    if (storeId && salt) {
+      (async () => {
+        if (storeId && salt) {
+          const remoteStore = await persistor.retreiveData(storeId, salt);
+          if (remoteStore) {
+            console.log(remoteStore)
+            setStore(remoteStore)
+          }
+        }
+      })();
+    }
+  }, [storeId, salt, persistor])
+
+
+  return (
+    <div className={styles.container}>
+      <div className={styles.toolbar}>
+        <Toolbar />
+      </div>
+      <div className={styles.editor}>
+        <Editor value={store.content} onChange={value => updateStore('content', value)} />
+      </div>
+    </div>
+  );
 }
 
 export default App;
