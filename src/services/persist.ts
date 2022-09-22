@@ -69,18 +69,27 @@ export class Persist {
     this.persist(payload, storeId);
   };  
 
+  syncNow = async (store: Store, storeId: string, salt: string) => {
+    this.setState(PersistorState.SAVING)
+    await this.storeData(store, storeId, salt)
+    setTimeout(() => {
+      this.setState(PersistorState.IDLE)
+      this.lastSync = new Date()
+    }, 1000)    
+  }
+
   sync = (store: Store, storeId: string, salt: string) => {
     window.clearInterval(this.syncTracker);
-    this.syncTracker = setInterval(async () => {
-      this.setState(PersistorState.SAVING)
-      await this.storeData(store, storeId, salt)
-      setTimeout(() => {
-        this.setState(PersistorState.IDLE)
-        this.lastSync = new Date()
-      }, 1000)
+    this.syncTracker = setInterval(async () => {  
+      this.syncNow(store, storeId, salt)
     }, 5000) as unknown as number // TODO fixme
   
     return () => window.clearInterval(this.syncTracker);
+  }
+
+  stop = () => {
+    this.setState(PersistorState.IDLE)
+    window.clearInterval(this.syncTracker);
   }
 
   onPersistorStateChange = (callback: OnPersistorStateChangeCallback) => {

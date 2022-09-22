@@ -37,7 +37,7 @@ export const Toolbar = () => {
                     }
                 }} className={style.icon}><PasswordIcon /></span>
                 <span onClick={toggleEditor} className={style.icon}><EditIcon /></span>
-                <span title={persistance.persistor?.lastSync?.toTimeString()}><SyncIcon isActive={isSyncing}/></span>
+                <span className={style.icon} title={persistance.persistor?.lastSync?.toTimeString()} onClick={persistance.store}><SyncIcon isActive={isSyncing}/></span>
             </div>
         </div>
     )

@@ -1,11 +1,9 @@
 import React, { useContext } from "react";
-import "./App.css";
 import { Editor } from "./components/editor";
 import { Toolbar } from "./components/toolbar";
-
+import { AppStateContext } from "./components/appState";
 
 import styles from "./app.module.css";
-import { AppStateContext } from "./components/appState";
 
 function App() {
 

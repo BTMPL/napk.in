@@ -10,6 +10,7 @@ type ContextType = {
     },
     persistance: {
         persistor: Persist | null,
+        store: () => void,
     },
     store: {
         store: Store | null,
@@ -25,6 +26,7 @@ export const AppStateContext = React.createContext<ContextType>({
     },
     persistance: {
         persistor: null,
+        store: () => {},
     },
     store: {
         store: null,
@@ -49,12 +51,12 @@ export const AppStateProvider = ({ children }: AppStatecontextProviderProps) => 
     });    
 
 
+    const [store, setStore] = React.useState(generateNewStore());
     const [salt, setSalt] = React.useState(window.location.hash.toString().substr(1));
     const [storeId, setStoreId] = React.useState(() =>
       getStoreIdFromUrl(window.location.pathname)
     );
   
-    const [store, setStore] = React.useState(generateNewStore());
   
     React.useEffect(() => {
       if (!storeId) {
@@ -77,6 +79,8 @@ export const AppStateProvider = ({ children }: AppStatecontextProviderProps) => 
     React.useEffect(() => {
       if (store && storeId && salt) {
         return persistor?.sync(store, storeId, salt);
+      } else {
+        persistor?.stop()
       }
     }, [store, storeId, salt, persistor])
   
@@ -84,21 +88,43 @@ export const AppStateProvider = ({ children }: AppStatecontextProviderProps) => 
       if (storeId && salt) {
         (async () => {
           if (storeId && salt) {
-            const remoteStore = await persistor?.retreiveData(storeId, salt);
-            if (remoteStore) {
-              setStore(remoteStore)
+            try {
+                const remoteStore = await persistor?.retreiveData(storeId, salt);
+                if (remoteStore) {
+                    setStore(remoteStore)
+                } else {
+                    throw new Error()
+                }
+            } catch {
+                // TODO inform the UI that there was an error, do not try to override the store
+                persistor.stop();
             }
           }
         })();
       }
     }, [storeId, salt, persistor])    
 
+    const storeNow = () => {
+        if (storeId && salt) {
+            return persistor?.syncNow(store, storeId, salt);
+        }
+    }
+
     const updateStore = (field: keyof Store, value: string) => {
         setStore({
-        ...store,
-        [field]: value
+            ...store,
+            [field]: value
         })
-    }    
+    }
+
+    const changeSalt = (newSalt: string) => {
+        if (!storeId) return;
+        persistor.stop();
+        (async() => {
+            await persistor.storeData(store, storeId, newSalt);
+            setSalt(newSalt);
+        })()
+    }
 
     return (
         <AppStateContext.Provider value={{
@@ -113,11 +139,12 @@ export const AppStateProvider = ({ children }: AppStatecontextProviderProps) => 
             },
             persistance: {
                 persistor,
+                store: storeNow,
             },
             store: {
                 store,
                 update: updateStore,
-                setSalt,
+                setSalt: changeSalt,
             }
         }}>
             {children}
