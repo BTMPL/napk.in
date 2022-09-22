@@ -3,7 +3,9 @@ import { PersistorState } from '../../services/persist';
 import { AppStateContext } from '../appState';
 import { DownloadIcon } from './DownloadIcon';
 import { EditIcon } from './EditIcon';
+import { MoonIcon } from './MoonIcon';
 import { PasswordIcon } from './PasswordIcon';
+import { SunIcon } from './SunIcon';
 import { SyncIcon } from './SyncIcon';
 
 import style from './toolbar.module.css';
@@ -27,10 +29,26 @@ export const Toolbar = () => {
         editor.setIsActive(!editor.isActive)   
     }, [editor]);
 
+    const setTheme = (colorTheme: string) => {
+        document.querySelector('html')?.setAttribute('data-color-mode', colorTheme)
+        window.localStorage.setItem('theme', colorTheme)
+    }
+
+    React.useEffect(() => {
+        const color = window.localStorage.getItem('theme');
+        if (color) {
+            setTheme(color);
+        }
+    })
+
     return (
         <div className={style.toolbar}>
             <div />
             <div>
+                <span className={style.icon}>
+                    <span className={style.moon} onClick={() => setTheme('dark')}><MoonIcon /></span>
+                    <span className={style.sun} onClick={() => setTheme('light')}><SunIcon /></span>
+                </span>
                 <span className={style.icon} onClick={store.download}><DownloadIcon /></span>
                 <span onClick={() => {
                     const salt = window.prompt('What\'s your new salt?');

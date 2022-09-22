@@ -2,9 +2,12 @@
     box-sizing: border-box;;
 }
 
-body, html {
+:root {
     --color-bg-default: white;
-    --color-text: black;
+    --color-text: black;    
+}
+
+body, html {
     background-color: var(--color-bg-default);
     color: var(--color-text);
 }
@@ -25,7 +28,7 @@ body, html {
 }
 
 @media (prefers-color-scheme: dark) {
-    body, html {
+    :root {
         --color-bg-default: #0d1117;
         --color-text: white;
     }
@@ -33,4 +36,22 @@ body, html {
     .toolbar {
         filter: invert(1);
     }
+}
+
+html[data-color-mode*='dark'] {
+    --color-bg-default: #0d1117 ;
+    --color-text: white ;
+}
+
+html[data-color-mode*='dark'] .toolbar {
+    filter: invert(1) ;  
+}
+
+html[data-color-mode*='light'] {
+    --color-bg-default: #white ;
+    --color-text: black ;
+}
+
+html[data-color-mode*='light'] .toolbar {
+    filter: invert(0) ;  
 }

@@ -24,6 +24,10 @@
     cursor: pointer;
 }
 
+.icon svg {
+    color: black;
+}
+
 @keyframes spin {
     from {
         transform:rotate(0deg);
@@ -31,4 +35,27 @@
     to {
         transform:rotate(360deg);
     }
+}
+
+.sun {
+    display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .sun {
+        display: initial
+    }
+    .moon {
+        display: none;
+    }
+}
+
+html[data-color-mode*='light'] .moon,
+html[data-color-mode*='dark'] .sun {
+    display: initial
+}
+
+html[data-color-mode*='light'] .sun,
+html[data-color-mode*='dark'] .moon {
+    display: none;
 }
