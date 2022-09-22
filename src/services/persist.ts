@@ -12,6 +12,23 @@ enum PersitorError {
   SAVE_ERROR
 }
 
+interface IPersistable {
+  persist: (data: string, storeId: string) => Promise<boolean>
+  retreive: (storeId: string) => Promise<string | null>
+}
+
+class PresistLocalStorage implements IPersistable {
+
+  persist = async (data: string, storeId: string) => {
+    window.localStorage.setItem(`store-${storeId}`, data);
+    return true;
+  }
+  
+  retreive = async (storeId: string) => {
+    return window.localStorage.getItem(`store-${storeId}`);
+  }  
+}
+
 type OnPersistorStateChangeCallback = (state: PersistorState) => void
 
 export class Persist {
@@ -19,6 +36,8 @@ export class Persist {
   syncTracker = 0;
   state = PersistorState.IDLE;
   lastSync: Date | null = null
+
+  implementation: IPersistable = new PresistLocalStorage()
 
   callbacks: {
     stateChange: Array<OnPersistorStateChangeCallback>
@@ -31,18 +50,9 @@ export class Persist {
     this.callbacks.stateChange.forEach(callback => callback(this.state))    
   }
 
-  persist = async (data: string, storeId: string) => {
-    window.localStorage.setItem(`store-${storeId}`, data);
-  }
-  
-  retreive = async (storeId: string) => {
-    return window.localStorage.getItem(`store-${storeId}`);
-  }
-  
-
   retreiveData = async (storeId: string, salt: string): Promise<Store | null> => {
     this.setState(PersistorState.LOADING)
-    const store = await this.retreive(storeId);
+    const store = await this.implementation.retreive(storeId);
     if (store) {
       try {
         const decrypted = await decryptPayload(store, salt);
@@ -66,7 +76,7 @@ export class Persist {
     salt: string
   ) => {
     const payload = (await encryptPayload(storeToPersist, salt)).toString();
-    this.persist(payload, storeId);
+    this.implementation.persist(payload, storeId);
   };  
 
   syncNow = async (store: Store, storeId: string, salt: string) => {
