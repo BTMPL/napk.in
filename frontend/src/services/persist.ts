@@ -38,7 +38,6 @@ export class PersistS3 implements IPersistable {
   }
 
   persist = async (data: Uint8Array, storeId: string) => {
-    console.log("try parsist");
     const shapeFileBlob = new Blob([data.toString()], {
       type: "text/plain",
     });
@@ -129,9 +128,8 @@ export class Persist {
   };
 
   sync = (store: Store, storeId: string, salt: string) => {
-    return;
-    window.clearInterval(this.syncTracker);
-    this.syncTracker = setInterval(async () => {
+    window.clearTimeout(this.syncTracker);
+    this.syncTracker = setTimeout(async () => {
       this.syncNow(store, storeId, salt);
     }, 5000) as unknown as number; // TODO fixme
 
