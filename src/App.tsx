@@ -57,6 +57,8 @@ function App() {
 
   const [store, setStore] = React.useState(generateNewStore());
 
+  console.log(store);
+
   React.useEffect(() => {
     if (!storeId) {
       setStoreId(generateNewStoreId());
