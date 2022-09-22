@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import "./App.css";
 import { Editor } from "./components/editor";
 import { Toolbar } from "./components/toolbar";
@@ -13,15 +13,11 @@ import {
 } from "./services/store";
 
 import styles from "./app.module.css";
-import { Persist } from "./services/persist";
+import { AppStateContext } from "./components/appState";
 
 function App() {
 
-  const [persistor] = React.useState(() => {
-    const p = new Persist()
-    p.onPersistorStateChange(v => console.log(v))
-    return p;
-  });
+  const { persistance: { persistor } } = useContext(AppStateContext)
 
   const [salt, setSalt] = React.useState(window.location.hash.toString().substr(1));
   const [storeId, setStoreId] = React.useState(() =>
@@ -57,7 +53,7 @@ function App() {
 
   React.useEffect(() => {
     if (store && storeId && salt) {
-      return persistor.sync(store, storeId, salt);
+      return persistor?.sync(store, storeId, salt);
     }
   }, [store, storeId, salt, persistor])
 
@@ -65,9 +61,8 @@ function App() {
     if (storeId && salt) {
       (async () => {
         if (storeId && salt) {
-          const remoteStore = await persistor.retreiveData(storeId, salt);
+          const remoteStore = await persistor?.retreiveData(storeId, salt);
           if (remoteStore) {
-            console.log(remoteStore)
             setStore(remoteStore)
           }
         }

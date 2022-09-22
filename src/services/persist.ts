@@ -1,7 +1,7 @@
 import { decryptPayload, encryptPayload } from "./crypto";
 import { Store } from "./store";
 
-enum PersistorState {
+export enum PersistorState {
   IDLE,
   SAVING,
   LOADING,
@@ -18,6 +18,7 @@ export class Persist {
 
   syncTracker = 0;
   state = PersistorState.IDLE;
+  lastSync: Date | null = null
 
   callbacks: {
     stateChange: Array<OnPersistorStateChangeCallback>
@@ -40,20 +41,22 @@ export class Persist {
   
 
   retreiveData = async (storeId: string, salt: string): Promise<Store | null> => {
+    this.setState(PersistorState.LOADING)
     const store = await this.retreive(storeId);
     if (store) {
       try {
         const decrypted = await decryptPayload(store, salt);
-        console.log({
-          decrypted
-        })
+        this.setState(PersistorState.IDLE)
         if (decrypted) {
+          this.lastSync = new Date();
           return JSON.parse(decrypted);
         }
       } catch {
+        this.setState(PersistorState.IDLE)
         throw new Error();
       }
     }
+    this.setState(PersistorState.IDLE)
     throw new Error();
   };
 
@@ -73,6 +76,7 @@ export class Persist {
       await this.storeData(store, storeId, salt)
       setTimeout(() => {
         this.setState(PersistorState.IDLE)
+        this.lastSync = new Date()
       }, 1000)
     }, 5000) as unknown as number // TODO fixme
   
@@ -81,5 +85,8 @@ export class Persist {
 
   onPersistorStateChange = (callback: OnPersistorStateChangeCallback) => {
     this.callbacks.stateChange.push(callback)
+  }
+  onPersistorStateChangeRemove = (callback: OnPersistorStateChangeCallback) => {
+    this.callbacks.stateChange = this.callbacks.stateChange.filter(cb => cb !== callback)
   }
 }
