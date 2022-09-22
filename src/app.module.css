@@ -2,6 +2,13 @@
     box-sizing: border-box;;
 }
 
+body, html {
+    --color-bg-default: white;
+    --color-text: black;
+    background-color: var(--color-bg-default);
+    color: var(--color-text);
+}
+
 .container {
     height: 100vh;
     display: flex;
@@ -15,4 +22,15 @@
 .editor {
     flex: 1;
     padding: 0.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    body, html {
+        --color-bg-default: #0d1117;
+        --color-text: white;
+    }
+
+    .toolbar {
+        filter: invert(1);
+    }
 }
