@@ -1,13 +1,14 @@
 service: backend
 
-frameworkVersion: '3'
+frameworkVersion: "3"
 
 provider:
   name: aws
   runtime: nodejs14.x
+  region: eu-central-1
   apiGateway:
     binaryMediaTypes:
-      - 'multipart/form-data'  
+      - "multipart/form-data"
 
 functions:
   uploader:
@@ -16,14 +17,14 @@ functions:
       - http: POST /upload
     role: UploadRole
     environment:
-      BUCKET: napkin${opt:stage, 'dev'}
+      BUCKET: napkin-encrypted-storage-${opt:stage, 'dev'}
 
 resources:
   Resources:
     NapkinBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: napkin
+        BucketName: napkin-encrypted-storage-${opt:stage, 'dev'}
         AccessControl: PublicRead
     UploadRole:
       Type: AWS::IAM::Role
@@ -45,10 +46,9 @@ resources:
                   Action:
                     - s3:PutObject
                     - s3:PutObjectAcl
-                  Resource:
-                    !Sub
-                      - "arn:aws:s3:::${BucketName}/*"
-                      - {BucketName: !Ref NapkinBucket}
+                  Resource: !Sub
+                    - "arn:aws:s3:::${BucketName}/*"
+                    - { BucketName: !Ref NapkinBucket }
                 - Effect: Allow
                   Action:
                     - logs:CreateLogGroup
@@ -57,4 +57,7 @@ resources:
                   Resource:
                     Fn::Sub:
                       - arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/*:*:*
-                      - { Region: !Ref AWS::Region, AccountId: !Ref AWS::AccountId }
+                      - {
+                          Region: !Ref AWS::Region,
+                          AccountId: !Ref AWS::AccountId,
+                        }
