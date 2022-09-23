@@ -4,6 +4,7 @@ import { Toolbar } from "./components/toolbar";
 import { AppStateContext } from "./components/appState";
 import { AppState } from "./components/appState/AppStateContext";
 import { Loading } from "./components/loading";
+import { Error } from "./components/error";
 
 import styles from "./app.module.css";
 
@@ -21,6 +22,15 @@ function App() {
         />
       </div>
       <div className={styles.editor}>
+        {state === AppState.DECRYPTION_FAILED && (
+          <Error>
+            We're unable to decrypt your note - double check that the URL you
+            used is valid. If the URL is valid, and the decryption failed,
+            please try again. If the error persist, your notes might be lost.
+            Please understand we don't store your password and the notes are
+            encrypted with a secure method.
+          </Error>
+        )}
         {state === AppState.LOADING && (
           <Loading>We're fetching your notes ...</Loading>
         )}

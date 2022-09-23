@@ -7,10 +7,9 @@ export enum PersistorState {
   LOADING,
 }
 
-enum PersitorError {
-  LOAD_ERROR,
-  SAVE_ERROR,
-}
+export class PersistorRetreiveError extends Error {}
+export class PersistorStoreError extends Error {}
+export class PersistorDecodeError extends Error {}
 
 interface IPersistable {
   persist: (data: Uint8Array, storeId: string) => Promise<boolean>;
@@ -55,7 +54,7 @@ export class PersistS3 implements IPersistable {
     });
     const json = await request.json();
     if (!json.link) {
-      throw new Error();
+      throw new PersistorStoreError();
     }
 
     return true;
@@ -63,6 +62,9 @@ export class PersistS3 implements IPersistable {
 
   retreive = async (storeId: string) => {
     const request = await fetch(`${this.s3Url}/${storeId}.bin`);
+    if (!request.ok) {
+      throw new PersistorRetreiveError();
+    }
     const response = request.text();
     return response;
   };
@@ -97,22 +99,25 @@ export class Persist {
     salt: string
   ): Promise<Store | null> => {
     this.setState(PersistorState.LOADING);
-    const store = await this.implementation.retreive(storeId);
-    if (store) {
-      try {
-        const decrypted = await decryptPayload(store, salt);
-        this.setState(PersistorState.IDLE);
-        if (decrypted) {
-          this.lastSync = new Date();
-          return JSON.parse(decrypted);
+    try {
+      const store = await this.implementation.retreive(storeId);
+      if (store) {
+        try {
+          const decrypted = await decryptPayload(store, salt);
+          if (decrypted) {
+            this.lastSync = new Date();
+            return JSON.parse(decrypted);
+          }
+        } catch {
+          throw new PersistorDecodeError();
+        } finally {
+          this.setState(PersistorState.IDLE);
         }
-      } catch {
-        this.setState(PersistorState.IDLE);
-        throw new Error();
       }
+    } finally {
+      this.setState(PersistorState.IDLE);
     }
-    this.setState(PersistorState.IDLE);
-    throw new Error();
+    return null;
   };
 
   storeData = async (storeToPersist: Store, storeId: string, salt: string) => {

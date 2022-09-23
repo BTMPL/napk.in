@@ -1,7 +1,12 @@
 import React from "react";
 import { generateSalt } from "../../services/crypto";
 import { downloadBlob } from "../../services/download";
-import { Persist, PersistS3 } from "../../services/persist";
+import {
+  Persist,
+  PersistorDecodeError,
+  PersistorRetreiveError,
+  PersistS3,
+} from "../../services/persist";
 import {
   generateNewStore,
   generateNewStoreId,
@@ -33,6 +38,7 @@ export enum AppState {
   SPLASH,
   LOADING,
   READY,
+  DECRYPTION_FAILED,
 }
 
 export const AppStateContext = React.createContext<ContextType>({
@@ -124,13 +130,17 @@ export const AppStateProvider = ({
             const remoteStore = await persistor?.retreiveData(storeId, salt);
             if (remoteStore) {
               setStore(remoteStore);
-              setState(AppState.READY);
             }
-          } catch {
-            // TODO inform the UI that there was an error, do not try to override the store
-            persistor.stop();
-          } finally {
             setState(AppState.READY);
+          } catch (e) {
+            setState(AppState.READY);
+            if (e instanceof PersistorRetreiveError) {
+              console.log(`Store ${storeId} not found`);
+            } else if (e instanceof PersistorDecodeError) {
+              console.log(`Unable to decrypt store ${storeId}`);
+              setState(AppState.DECRYPTION_FAILED);
+            }
+            persistor.stop();
           }
         }
       })();
