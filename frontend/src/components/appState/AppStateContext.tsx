@@ -1,5 +1,5 @@
 import React from "react";
-import { encryptPayload, generateSalt } from "../../services/crypto";
+import { generateSalt } from "../../services/crypto";
 import { downloadBlob } from "../../services/download";
 import { Persist, PersistS3 } from "../../services/persist";
 import {
@@ -10,6 +10,9 @@ import {
 } from "../../services/store";
 
 type ContextType = {
+  app: {
+    state: AppState;
+  };
   editor: {
     isActive: boolean;
     setIsActive: (state: boolean) => void;
@@ -26,7 +29,16 @@ type ContextType = {
   };
 };
 
+export enum AppState {
+  SPLASH,
+  LOADING,
+  READY,
+}
+
 export const AppStateContext = React.createContext<ContextType>({
+  app: {
+    state: AppState.SPLASH,
+  },
   editor: {
     isActive: false,
     setIsActive: (state: boolean) => {},
@@ -63,6 +75,12 @@ export const AppStateProvider = ({
     );
   });
 
+  const [state, setState] = React.useState<AppState>(() => {
+    if (getStoreIdFromUrl(window.location.pathname)) {
+      return AppState.LOADING;
+    }
+    return AppState.SPLASH;
+  });
   const [store, setStore] = React.useState(generateNewStore());
   const [salt, setSalt] = React.useState(
     window.location.hash.toString().substr(1)
@@ -75,13 +93,13 @@ export const AppStateProvider = ({
     if (!storeId) {
       setStoreId(generateNewStoreId());
       setSalt(generateSalt());
-      setStore(generateNewStore());
+      setState(AppState.READY);
     }
     if (storeId && salt) {
       window.history.pushState(undefined, "", `/n/${storeId}`);
       window.location.hash = salt;
     }
-  }, [storeId, salt, store]);
+  }, [storeId, salt]);
 
   React.useEffect(() => {
     if (salt) {
@@ -101,16 +119,18 @@ export const AppStateProvider = ({
     if (storeId && salt) {
       (async () => {
         if (storeId && salt) {
+          setState(AppState.LOADING);
           try {
             const remoteStore = await persistor?.retreiveData(storeId, salt);
             if (remoteStore) {
               setStore(remoteStore);
-            } else {
-              throw new Error();
+              setState(AppState.READY);
             }
           } catch {
             // TODO inform the UI that there was an error, do not try to override the store
             persistor.stop();
+          } finally {
+            setState(AppState.READY);
           }
         }
       })();
@@ -142,6 +162,9 @@ export const AppStateProvider = ({
   return (
     <AppStateContext.Provider
       value={{
+        app: {
+          state,
+        },
         editor: {
           ...editor,
           setIsActive: (state: boolean) => {

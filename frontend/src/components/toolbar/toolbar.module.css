@@ -1,61 +1,66 @@
 .toolbar {
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.5rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem;
+}
+
+.disabled {
+  opacity: 0.2;
+  pointer-events: none;
 }
 
 .toolbar > div {
-    display: flex;
-    align-items: center;
-    text-align: right;
-    gap: 0.5rem;
+  display: flex;
+  align-items: center;
+  text-align: right;
+  gap: 0.5rem;
 }
 
 .spin {
-    animation-name: spin;
-    animation-duration: 2500ms;
-    animation-iteration-count: infinite;
-    animation-timing-function: linear;     
+  animation-name: spin;
+  animation-duration: 2500ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
 }
 
 .icon {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .icon svg {
-    color: black;
+  color: black;
 }
 
 @keyframes spin {
-    from {
-        transform:rotate(0deg);
-    }
-    to {
-        transform:rotate(360deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .sun {
-    display: none;
+  display: none;
 }
 
 @media (prefers-color-scheme: dark) {
-    .sun {
-        display: initial
-    }
-    .moon {
-        display: none;
-    }
-}
-
-html[data-color-mode*='light'] .moon,
-html[data-color-mode*='dark'] .sun {
-    display: initial
-}
-
-html[data-color-mode*='light'] .sun,
-html[data-color-mode*='dark'] .moon {
+  .sun {
+    display: initial;
+  }
+  .moon {
     display: none;
+  }
+}
+
+html[data-color-mode*="light"] .moon,
+html[data-color-mode*="dark"] .sun {
+  display: initial;
+}
+
+html[data-color-mode*="light"] .sun,
+html[data-color-mode*="dark"] .moon {
+  display: none;
 }
