@@ -10,3 +10,4 @@ VeryWIP
 - allow to set the title of the note, set it to <title>, store in Store
   - can use this to support "multiple notes" without actually trying, just create a new one, add it to bookmarks, sorted
 - do not save unmodified notes
+- figure out why we request the data twice (hoot called twice)

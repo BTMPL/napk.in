@@ -17,9 +17,7 @@ function App() {
   return (
     <div className={styles.container}>
       <div className={styles.toolbar}>
-        <Toolbar
-          disabled={state === AppState.LOADING || state === AppState.SPLASH}
-        />
+        <Toolbar disabled={state !== AppState.READY} />
       </div>
       <div className={styles.editor}>
         {state === AppState.DECRYPTION_FAILED && (

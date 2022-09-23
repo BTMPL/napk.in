@@ -133,6 +133,8 @@ export class Persist {
   };
 
   sync = (store: Store, storeId: string, salt: string) => {
+    if (store.dirty === false) return;
+
     window.clearTimeout(this.syncTracker);
     this.syncTracker = setTimeout(async () => {
       this.syncNow(store, storeId, salt);

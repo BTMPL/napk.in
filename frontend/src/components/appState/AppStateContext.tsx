@@ -129,7 +129,10 @@ export const AppStateProvider = ({
           try {
             const remoteStore = await persistor?.retreiveData(storeId, salt);
             if (remoteStore) {
-              setStore(remoteStore);
+              setStore({
+                ...remoteStore,
+                dirty: false,
+              });
             }
             setState(AppState.READY);
           } catch (e) {
@@ -157,6 +160,7 @@ export const AppStateProvider = ({
     setStore({
       ...store,
       [field]: value,
+      dirty: true,
     });
   };
 
